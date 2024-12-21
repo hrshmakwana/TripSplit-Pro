@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance & Expense Management Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="bi bi-wallet2 text-2xl text-blue-500 mr-2"></i>
+                    <span class="text-xl font-semibold">FinTracker Pro</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="switchView('personal')" class="px-4 py-2 rounded-lg hover:bg-gray-700 transition">Personal Expenses</button>
+                    <button onclick="switchView('group')" class="px-4 py-2 rounded-lg hover:bg-gray-700 transition">Group Split</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4">
+            <!-- Personal Expense Tracker -->
+        <div id="personal-view" class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Income & Balance Section -->
+                <div class="col-span-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Income & Balance</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Monthly Income</label>
+                            <input type="number" id="income-input" class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your monthly income">
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Current Balance</p>
+                            <p id="current-balance" class="text-2xl font-bold text-green-500">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expense Chart -->
+                <div class="col-span-2 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Expense Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Add Expense Form -->
+                <div class="col-span-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Add Expense</h2>
+                    <form id="expense-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Amount</label>
+                            <input type="number" id="amount" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter amount">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Category</label>
+                            <select id="category" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Bills">Bills</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date</label>
+                            <input type="datetime-local" id="expense-date" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">Add Expense</button>
+                    </form>
+                </div>
+
+                <!-- Recent Expenses -->
+                <div class="col-span-2 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Recent Expenses</h2>
+                    <div id="expense-list" class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+                        <!-- Expenses will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Group Expense Splitter -->
+        <div id="group-view" class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Participants Management -->
+                <div class="col-span-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Participants</h2>
+                    <div class="space-y-4">
+                        <div class="flex space-x-2">
+                            <input type="text" id="participant-name" class="flex-1 bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter name">
+                            <button onclick="addParticipant()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">
+                                Add
+                            </button>
+                        </div>
+                        <div id="participants-list" class="space-y-2">
+                            <!-- Participants will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Group Expense -->
+                <div class="col-span-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Add Group Expense</h2>
+                    <form id="group-expense-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Amount</label>
+                            <input type="number" id="group-amount" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter amount">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Description</label>
+                            <input type="text" id="expense-description" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Lunch at Restaurant">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date & Time</label>
+                            <input type="datetime-local" id="expense-datetime" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Paid By</label>
+                            <select id="payer" required class="w-full bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <!-- Options will be added dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Split Between</label>
+                            <div id="split-members" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                                <!-- Checkboxes will be added dynamically -->
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">Add Expense</button>
+                    </form>
+                </div>
+
+                <!-- Settlement Summary -->
+                <div class="col-span-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Settlement Summary</h2>
+                    <div id="settlement-summary" class="space-y-4">
+                        <!-- Settlement details will be added here -->
+                    </div>
+                </div>
+
+                <!-- Group Expense History -->
+                <div class="col-span-3 bg-gray-800 rounded-xl p-6 shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Expense History</h2>
+                    <div id="expense-history" class="space-y-4">
+                        <!-- Expense history will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<script src="app.js"></script>
+</body>
+</html>
